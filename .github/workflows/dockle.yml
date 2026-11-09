@@ -28,8 +28,8 @@ jobs:
         with:
           args: >-
             --exit-code 0
-            --format json
-            --output dockle.json
+            --format sarif
+            --output dockle.sarif
             ghcr.io/ton-blockchain/${{ matrix.image }}:latest
 
       - name: Upload report
@@ -37,6 +37,6 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: dockle-${{ matrix.image }}
-          path: dockle.json
+          path: dockle.sarif
           if-no-files-found: warn
           retention-days: 30

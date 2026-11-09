@@ -11,7 +11,7 @@
 | --- | --- | --- | --- |
 | [Trivy](.github/workflows/trivy.yml) | `aquasecurity/trivy-action` | Уязвимости пакетов ОС и зависимостей | SARIF |
 | [Grype](.github/workflows/grype.yml) | `anchore/scan-action` | Уязвимости пакетов ОС и зависимостей | SARIF |
-| [Dockle](.github/workflows/dockle.yml) | `goodwithtech/dockle` Docker action | Настройки образа и практики сборки | JSON |
+| [Dockle](.github/workflows/dockle.yml) | `goodwithtech/dockle` Docker action | Настройки образа и практики сборки | SARIF |
 
 Готовые actions сами устанавливают и запускают сканеры. Dockle запускается прямо
 из готового контейнера. Собственных скриптов и шагов `run` нет.
