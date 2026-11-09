@@ -8,6 +8,8 @@ on:
 
 permissions:
   contents: read
+  actions: read
+  security-events: write
 
 jobs:
   scan:
@@ -23,7 +25,13 @@ jobs:
           - faucet
           - actonscan-backend
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
       - name: Run Dockle
+        id: scan
         uses: docker://goodwithtech/dockle:latest
         with:
           args: >-
@@ -31,6 +39,13 @@ jobs:
             --format sarif
             --output dockle.sarif
             ghcr.io/ton-blockchain/${{ matrix.image }}:latest
+
+      - name: Upload SARIF to GitHub Code Scanning
+        if: ${{ !cancelled() && steps.scan.outcome == 'success' }}
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: dockle.sarif
+          category: dockle-${{ matrix.image }}
 
       - name: Upload report
         if: ${{ always() }}
