@@ -1,0 +1,42 @@
+name: Grype
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/grype.yml
+
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    name: Grype / ${{ matrix.image }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        image:
+          - localton
+          - verifier
+          - faucet
+          - actonscan-backend
+    steps:
+      - name: Scan public image
+        id: scan
+        uses: anchore/scan-action@v6
+        with:
+          image: ghcr.io/ton-blockchain/${{ matrix.image }}:latest
+          fail-build: false
+          only-fixed: false
+          output-format: sarif
+
+      - name: Upload report
+        if: ${{ always() && steps.scan.outputs.sarif != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: grype-${{ matrix.image }}
+          path: ${{ steps.scan.outputs.sarif }}
+          if-no-files-found: warn
+          retention-days: 30

@@ -1,0 +1,46 @@
+name: Trivy
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/trivy.yml
+
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    name: Trivy / ${{ matrix.image }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        image:
+          - localton
+          - verifier
+          - faucet
+          - actonscan-backend
+    steps:
+      - name: Scan public image
+        uses: aquasecurity/trivy-action@57a97c7e7821a5776cebc9bb87c984fa69cba8f1 # 0.35.0
+        with:
+          version: v0.69.3
+          scan-type: image
+          image-ref: ghcr.io/ton-blockchain/${{ matrix.image }}:latest
+          scanners: vuln
+          format: sarif
+          output: trivy.sarif
+          exit-code: '0'
+          ignore-unfixed: false
+          timeout: 20m
+
+      - name: Upload report
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: trivy-${{ matrix.image }}
+          path: trivy.sarif
+          if-no-files-found: warn
+          retention-days: 30

@@ -1,0 +1,42 @@
+name: Dockle
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/dockle.yml
+
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    name: Dockle / ${{ matrix.image }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        image:
+          - localton
+          - verifier
+          - faucet
+          - actonscan-backend
+    steps:
+      - name: Run Dockle
+        uses: docker://goodwithtech/dockle:latest
+        with:
+          args: >-
+            --exit-code 0
+            --format json
+            --output dockle.json
+            ghcr.io/ton-blockchain/${{ matrix.image }}:latest
+
+      - name: Upload report
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: dockle-${{ matrix.image }}
+          path: dockle.json
+          if-no-files-found: warn
+          retention-days: 30
